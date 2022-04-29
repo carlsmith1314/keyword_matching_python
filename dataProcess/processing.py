@@ -1,4 +1,5 @@
 import collections
+import math
 import os
 import random
 import torch
@@ -55,12 +56,28 @@ abs_vocab = get_vocab_imdb(abs_train_data)
 def_vocab = get_vocab_imdb(def_train_data)
 
 
-# 文本数据向量化
-def preprocess_imdb(data, vocab):
-    max_l = 300
 
-    # 定义评论补全函数
-    # 将每条评论通过截断或者补0，使得长度变成500
+# 计算截取长度
+
+def cut_len(extract_data):
+    min_len = len(extract_data[0])
+    max_len = len(extract_data[0])
+    for i in range(len(extract_data)):
+        mid_len = len(extract_data[i])
+        if mid_len < min_len:
+            min_len = mid_len
+        if mid_len > max_len:
+            max_len = mid_len
+    te = math.ceil((min_len + max_len) / 2)
+    return max_len
+
+
+# 摘要数据向量化
+def preprocess_imdb(data, vocab):
+    # tokenized_data是数据按照空格分开后的句子，是一个二维list
+    tokenized_data = get_tokenized_imdb(data)
+    # 计算截取长度
+    max_l = cut_len(tokenized_data)
 
     def pad(x):
         return x[:max_l] if len(x) > max_l else [0] * (max_l - len(x)) + x
